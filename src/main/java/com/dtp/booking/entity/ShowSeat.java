@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(
         name = "show_seats",
@@ -39,4 +41,8 @@ public class ShowSeat {
 
     @Version
     private Long version;
+
+    private Long lockedByUserId;
+
+    private LocalDateTime lockedAt;
 }
