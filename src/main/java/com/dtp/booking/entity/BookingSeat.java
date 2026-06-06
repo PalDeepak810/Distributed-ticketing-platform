@@ -1,9 +1,6 @@
 package com.dtp.booking.entity;
 
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,4 +15,14 @@ import lombok.Setter;
 public class BookingSeat {
     @EmbeddedId
     private BookingSeatId id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("bookingId")
+    @JoinColumn(name = "booking_id")
+    private Booking booking;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("showSeatId")
+    @JoinColumn(name = "show_seat_id")
+    private ShowSeat showSeat;
 }

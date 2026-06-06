@@ -2,10 +2,9 @@ package com.dtp.booking.service;
 
 import com.dtp.booking.dto.CreateBookingResponse;
 import com.dtp.booking.dto.ReserveSeatsRequest;
-import com.dtp.booking.entity.Booking;
-import com.dtp.booking.entity.Show;
-import com.dtp.booking.entity.ShowSeat;
+import com.dtp.booking.entity.*;
 import com.dtp.booking.repository.BookingRepository;
+import com.dtp.booking.repository.BookingSeatRepository;
 import com.dtp.booking.repository.ShowSeatRepository;
 import com.dtp.common.enums.BookingStatus;
 import com.dtp.common.enums.SeatStatus;
@@ -17,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,6 +28,8 @@ public class BookingService {
     private final BookingRepository bookingRepository;
 
     private final UserRepository userRepository;
+
+    private final BookingSeatRepository bookingSeatRepository;
 
     @Transactional
     public CreateBookingResponse reserveSeats(
@@ -56,12 +58,15 @@ public class BookingService {
 
         User user =
                 userRepository.findById(
-                        request.getUserId()
-                ).orElseThrow(
-                        () -> new RuntimeException(
-                                "User not found"
+                                request.getUserId()
                         )
-                );
+                        .orElseThrow(
+                                () -> new RuntimeException(
+                                        "User not found"
+                                )
+                        );
+
+        LocalDateTime now = LocalDateTime.now();
 
         for (ShowSeat seat : showSeats) {
 
@@ -73,9 +78,7 @@ public class BookingService {
                     request.getUserId()
             );
 
-            seat.setLockedAt(
-                    LocalDateTime.now()
-            );
+            seat.setLockedAt(now);
         }
 
         showSeatRepository.saveAll(showSeats);
@@ -102,9 +105,7 @@ public class BookingService {
                 BookingStatus.PENDING
         );
 
-        booking.setBookingTime(
-                LocalDateTime.now()
-        );
+        booking.setBookingTime(now);
 
         booking.setTotalAmount(
                 totalAmount
@@ -115,42 +116,96 @@ public class BookingService {
                         booking
                 );
 
+        List<BookingSeat> bookingSeats =
+                new ArrayList<>();
+
+        for (ShowSeat showSeat : showSeats) {
+
+            BookingSeat bookingSeat =
+                    new BookingSeat();
+
+            BookingSeatId id =
+                    new BookingSeatId(
+                            booking.getId(),
+                            showSeat.getId()
+                    );
+
+            bookingSeat.setId(id);
+
+            bookingSeat.setBooking(
+                    booking
+            );
+
+            bookingSeat.setShowSeat(
+                    showSeat
+            );
+
+            bookingSeats.add(
+                    bookingSeat
+            );
+        }
+
+        bookingSeatRepository.saveAll(
+                bookingSeats
+        );
+
         return new CreateBookingResponse(
                 booking.getId(),
                 booking.getStatus()
         );
     }
-
     @Transactional
-    public String confirmBooking(Long bookingId){
-        Booking booking=
-                bookingRepository.findById(
-                        bookingId
-                ).orElseThrow(
-                        ()->new RuntimeException(
-                                "Booking not found"
-                        )
-                );
+    public String confirmBooking(
+            Long bookingId
+    ) {
 
-        if(booking.getStatus()!=BookingStatus.PENDING){
+        Booking booking =
+                bookingRepository.findById(
+                                bookingId
+                        )
+                        .orElseThrow(
+                                () -> new RuntimeException(
+                                        "Booking not found"
+                                )
+                        );
+
+        if (booking.getStatus()
+                != BookingStatus.PENDING) {
+
             throw new RuntimeException(
                     "Booking already processed"
             );
         }
 
-        List<ShowSeat> lockedSeats=
-                showSeatRepository.findByLockedByUserId(
-                        booking.getUser().getId()
-                );
+        List<BookingSeat> bookingSeats =
+                bookingSeatRepository
+                        .findByBookingId(
+                                bookingId
+                        );
 
-        for(ShowSeat seat:lockedSeats){
-            seat.setStatus(
+        List<ShowSeat> seatsToUpdate =
+                new ArrayList<>();
+
+        for (BookingSeat bookingSeat : bookingSeats) {
+
+            ShowSeat showSeat =
+                    bookingSeat.getShowSeat();
+
+            showSeat.setStatus(
                     SeatStatus.BOOKED
+            );
+
+            showSeat.setLockedAt(null);
+
+            showSeat.setLockedByUserId(null);
+
+            seatsToUpdate.add(
+                    showSeat
             );
         }
 
         showSeatRepository.saveAll(
-                lockedSeats
+                seatsToUpdate
         );
 
         booking.setStatus(
@@ -161,6 +216,6 @@ public class BookingService {
                 booking
         );
 
-        return "Booking confirmed";
+        return "Booking Confirmed";
     }
 }
