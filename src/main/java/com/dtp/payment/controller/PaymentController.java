@@ -2,6 +2,7 @@ package com.dtp.payment.controller;
 
 import com.dtp.payment.dto.CreatePaymentRequest;
 import com.dtp.payment.service.PaymentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ public class PaymentController {
 
     @PostMapping("/pay")
     public ResponseEntity<String> pay(
+            @Valid
             @RequestBody
             CreatePaymentRequest request
     ){

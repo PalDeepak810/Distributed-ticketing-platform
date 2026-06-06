@@ -1,0 +1,30 @@
+services:
+
+  postgres:
+    image: postgres:16
+
+    container_name: dtp-postgres
+
+    environment:
+      POSTGRES_DB: movie_ticketing_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Dp810@310
+
+    ports:
+      - "5432:5432"
+
+  app:
+    build: .
+
+    container_name: dtp-app
+
+    ports:
+      - "8080:8080"
+
+    depends_on:
+      - postgres
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/movie_ticketing_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: Dp810@310

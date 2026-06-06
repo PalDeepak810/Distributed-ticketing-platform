@@ -6,9 +6,9 @@ spring:
 
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/movei_ticketing_db
-    username: postgres
-    password: Dp810@310
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/dtp}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:Dp810@310}
     driver-class-name: org.postgresql.Driver
 
 
