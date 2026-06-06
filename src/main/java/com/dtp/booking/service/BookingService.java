@@ -11,6 +11,7 @@ import com.dtp.common.enums.SeatStatus;
 import com.dtp.user.entity.User;
 import com.dtp.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -145,9 +146,13 @@ public class BookingService {
             );
         }
 
-        bookingSeatRepository.saveAll(
-                bookingSeats
-        );
+        try{
+            showSeatRepository.saveAll(showSeats);
+        }catch (ObjectOptimisticLockingFailureException ex){
+            throw new RuntimeException(
+                    "Seat was reserved by another user"
+            );
+        }
 
         return new CreateBookingResponse(
                 booking.getId(),
