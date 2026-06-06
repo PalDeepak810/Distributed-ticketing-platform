@@ -11,4 +11,6 @@ public interface ShowSeatRepository extends JpaRepository<ShowSeat,Long> {
     List<ShowSeat> findAllByIdIn(
             List<Long> ids
     );
+
+    List<ShowSeat> findByLockedByUserId(Long userId);
 }

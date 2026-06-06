@@ -1,5 +1,7 @@
 package com.dtp.booking.controller;
 
+import com.dtp.booking.dto.ConfirmBookingRequest;
+import com.dtp.booking.dto.CreateBookingResponse;
 import com.dtp.booking.dto.ReserveSeatsRequest;
 import com.dtp.booking.service.BookingService;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +18,24 @@ public class BookingController {
     private final BookingService bookingService;
 
     @PostMapping("/reserve")
-    public ResponseEntity<String> reserveSeats(
+    public ResponseEntity<CreateBookingResponse> reserveSeats(
             @RequestBody
             ReserveSeatsRequest request
     ){
         return ResponseEntity.ok(
                 bookingService.reserveSeats(request)
+        );
+    }
+
+    @PostMapping("/confirm")
+    public ResponseEntity<String> confirmBooking(
+            @RequestBody
+            ConfirmBookingRequest request
+    ){
+        return ResponseEntity.ok(
+                bookingService.confirmBooking(
+                        request.getBookingId()
+                )
         );
     }
 
